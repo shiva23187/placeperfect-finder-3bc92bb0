@@ -20,6 +20,19 @@ const featuredProperties = [
     baths: 2,
     sqft: 2400,
     type: "Apartment",
+    listingType: "sale" as const,
+  },
+  {
+    id: "7",
+    image: property1,
+    title: "Spacious 3BHK Apartment",
+    price: "₹85,000/month",
+    location: "Powai, Mumbai",
+    beds: 3,
+    baths: 2,
+    sqft: 1800,
+    type: "Apartment",
+    listingType: "rent" as const,
   },
   {
     id: "2",
@@ -31,15 +44,7 @@ const featuredProperties = [
     baths: 4,
     sqft: 4500,
     type: "House",
-  },
-  {
-    id: "3",
-    image: property3,
-    title: "Premium Commercial Shop",
-    price: "₹95 Lakh",
-    location: "Connaught Place, New Delhi",
-    sqft: 1800,
-    type: "Shop",
+    listingType: "sale" as const,
   },
 ];
 

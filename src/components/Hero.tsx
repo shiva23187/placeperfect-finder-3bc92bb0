@@ -28,13 +28,22 @@ const Hero = () => {
         </p>
         
         <div className="max-w-4xl mx-auto bg-white rounded-2xl p-6 shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
               <Input
                 placeholder="Search location..."
                 className="h-12"
               />
             </div>
+            <Select>
+              <SelectTrigger className="h-12">
+                <SelectValue placeholder="Buy or Rent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sale">Buy</SelectItem>
+                <SelectItem value="rent">Rent</SelectItem>
+              </SelectContent>
+            </Select>
             <Select>
               <SelectTrigger className="h-12">
                 <SelectValue placeholder="Property Type" />

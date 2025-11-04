@@ -14,6 +14,7 @@ interface PropertyCardProps {
   baths?: number;
   sqft?: number;
   type: string;
+  listingType: "sale" | "rent";
 }
 
 const PropertyCard = ({
@@ -26,6 +27,7 @@ const PropertyCard = ({
   baths,
   sqft,
   type,
+  listingType,
 }: PropertyCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -49,7 +51,12 @@ const PropertyCard = ({
             }`}
           />
         </button>
-        <Badge className="absolute top-4 left-4 bg-primary">{type}</Badge>
+        <div className="absolute top-4 left-4 flex gap-2">
+          <Badge className="bg-primary">{type}</Badge>
+          <Badge variant={listingType === "sale" ? "default" : "secondary"}>
+            For {listingType === "sale" ? "Sale" : "Rent"}
+          </Badge>
+        </div>
       </div>
       <CardContent className="p-5">
         <Link to={`/property/${id}`}>
