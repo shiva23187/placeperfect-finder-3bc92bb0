@@ -22,14 +22,14 @@ const PropertyDetails = () => {
     id: "1",
     image: property1,
     title: "Modern Luxury Apartment",
-    price: "$1,850,000",
-    location: "Downtown, New York, NY 10001",
+    price: "₹1.8 Cr",
+    location: "Bandra West, Mumbai, Maharashtra 400050",
     beds: 3,
     baths: 2,
     sqft: 2400,
     type: "Apartment",
     description:
-      "Experience luxury living in this stunning modern apartment featuring floor-to-ceiling windows, high-end finishes, and breathtaking city views. The open-concept design seamlessly blends the living, dining, and kitchen areas, creating a perfect space for entertaining.",
+      "Experience luxury living in this stunning modern apartment featuring floor-to-ceiling windows, high-end finishes, and breathtaking views of the Arabian Sea. The open-concept design seamlessly blends the living, dining, and kitchen areas, creating a perfect space for entertaining.",
     features: [
       "Central Air Conditioning",
       "Floor-to-ceiling windows",
@@ -40,8 +40,8 @@ const PropertyDetails = () => {
       "Building Gym",
       "24/7 Security",
     ],
-    ownerName: "John Smith",
-    ownerPhone: "+1234567890",
+    ownerName: "Rajesh Kumar",
+    ownerPhone: "+919876543210",
   };
 
   const handleWhatsAppContact = () => {
