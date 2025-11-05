@@ -30,7 +30,7 @@ const Navbar = () => {
   }, []);
   const navLinks = [
     { label: "Buy", href: "/properties" },
-    { label: "Sell", href: "#" },
+    { label: "Sell", href: "/add-property" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
