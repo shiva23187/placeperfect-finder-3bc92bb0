@@ -1,19 +1,49 @@
-import { Home, Building2, Menu } from "lucide-react";
+import { Home, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { User } from "@supabase/supabase-js";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
   const navLinks = [
     { label: "Buy", href: "/properties" },
     { label: "Sell", href: "#" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Error signing out");
+    } else {
+      toast.success("Signed out successfully");
+      navigate("/");
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -40,8 +70,20 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost">Log in</Button>
-            <Button>Sign up</Button>
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground">{user.email}</span>
+                <Button variant="ghost" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => navigate("/auth")}>Log in</Button>
+                <Button onClick={() => navigate("/auth")}>Sign up</Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Navigation */}
@@ -63,8 +105,20 @@ const Navbar = () => {
                   </Link>
                 ))}
                 <div className="flex flex-col space-y-2 pt-4">
-                  <Button variant="ghost" className="justify-start">Log in</Button>
-                  <Button className="justify-start">Sign up</Button>
+                  {user ? (
+                    <>
+                      <div className="text-sm text-muted-foreground px-3 py-2">{user.email}</div>
+                      <Button variant="ghost" className="justify-start" onClick={handleSignOut}>
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Log out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="ghost" className="justify-start" onClick={() => navigate("/auth")}>Log in</Button>
+                      <Button className="justify-start" onClick={() => navigate("/auth")}>Sign up</Button>
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>
