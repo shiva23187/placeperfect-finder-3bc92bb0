@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
@@ -5,50 +6,52 @@ import PropertyCard from "@/components/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import property1 from "@/assets/property-1.jpg";
-import property2 from "@/assets/property-2.jpg";
-import property3 from "@/assets/property-3.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
-const featuredProperties = [
-  {
-    id: "1",
-    image: property1,
-    title: "Modern Luxury Apartment",
-    price: "₹1.8 Cr",
-    location: "Bandra West, Mumbai",
-    beds: 3,
-    baths: 2,
-    sqft: 2400,
-    type: "Apartment",
-    listingType: "sale" as const,
-  },
-  {
-    id: "7",
-    image: property1,
-    title: "Spacious 3BHK Apartment",
-    price: "₹85,000/month",
-    location: "Powai, Mumbai",
-    beds: 3,
-    baths: 2,
-    sqft: 1800,
-    type: "Apartment",
-    listingType: "rent" as const,
-  },
-  {
-    id: "2",
-    image: property2,
-    title: "Elegant Family House",
-    price: "₹3.5 Cr",
-    location: "Jubilee Hills, Hyderabad",
-    beds: 5,
-    baths: 4,
-    sqft: 4500,
-    type: "House",
-    listingType: "sale" as const,
-  },
-];
+interface Property {
+  id: string;
+  image_url: string | null;
+  title: string;
+  price: number;
+  location: string;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  area: number | null;
+  category: string;
+  listing_type: string;
+}
 
 const Index = () => {
+  const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    fetchFeaturedProperties();
+  }, []);
+
+  const fetchFeaturedProperties = async () => {
+    const { data } = await supabase
+      .from("properties")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    if (data) {
+      setFeaturedProperties(data);
+    }
+  };
+
+  const formatPrice = (price: number, listingType: string) => {
+    if (listingType === "rent") {
+      return `₹${price.toLocaleString('en-IN')}/month`;
+    }
+    if (price >= 10000000) {
+      return `₹${(price / 10000000).toFixed(1)} Cr`;
+    }
+    if (price >= 100000) {
+      return `₹${(price / 100000).toFixed(0)} Lakh`;
+    }
+    return `₹${price.toLocaleString('en-IN')}`;
+  };
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -74,7 +77,19 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {featuredProperties.map((property) => (
-              <PropertyCard key={property.id} {...property} />
+              <PropertyCard 
+                key={property.id}
+                id={property.id}
+                image={property.image_url || ""}
+                title={property.title}
+                price={formatPrice(property.price, property.listing_type)}
+                location={property.location}
+                beds={property.bedrooms || undefined}
+                baths={property.bathrooms || undefined}
+                sqft={property.area || undefined}
+                type={property.category}
+                listingType={property.listing_type as "sale" | "rent"}
+              />
             ))}
           </div>
           
