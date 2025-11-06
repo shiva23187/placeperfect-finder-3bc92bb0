@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import ShareButton from "@/components/ShareButton";
+import PropertyMap from "@/components/PropertyMap";
 import {
   MapPin,
   Bed,
@@ -11,7 +13,6 @@ import {
   Square,
   Phone,
   Mail,
-  Share2,
   Heart,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,8 @@ interface PropertyData {
   listing_type: string;
   description: string | null;
   contact_number: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 const PropertyDetails = () => {
@@ -133,13 +136,12 @@ const PropertyDetails = () => {
                 >
                   <Heart className="h-5 w-5" />
                 </Button>
-                <Button
-                  size="icon"
+                <ShareButton
+                  propertyId={property.id}
+                  propertyTitle={property.title}
                   variant="secondary"
-                  className="rounded-full"
-                >
-                  <Share2 className="h-5 w-5" />
-                </Button>
+                  size="icon"
+                />
               </div>
             </div>
 
@@ -182,6 +184,23 @@ const PropertyDetails = () => {
                   <h2 className="text-2xl font-bold mb-4">Description</h2>
                   <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                     {property.description}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {property.latitude && property.longitude && (
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-bold mb-4">Location</h2>
+                  <PropertyMap
+                    latitude={property.latitude}
+                    longitude={property.longitude}
+                    title={property.title}
+                    location={property.location}
+                  />
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Coordinates: {property.latitude.toFixed(6)}, {property.longitude.toFixed(6)}
                   </p>
                 </CardContent>
               </Card>

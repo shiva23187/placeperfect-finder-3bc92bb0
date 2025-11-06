@@ -27,6 +27,8 @@ const AddProperty = () => {
     bathrooms: "",
     area: "",
     imageUrl: "",
+    latitude: "",
+    longitude: "",
   });
 
   useEffect(() => {
@@ -80,6 +82,8 @@ const AddProperty = () => {
       bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
       area: formData.area ? parseFloat(formData.area) : null,
       image_url: formData.imageUrl || null,
+      latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+      longitude: formData.longitude ? parseFloat(formData.longitude) : null,
     });
 
     setIsLoading(false);
@@ -232,6 +236,30 @@ const AddProperty = () => {
                     onChange={(e) => handleChange("imageUrl", e.target.value)}
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="latitude">Latitude</Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="any"
+                    placeholder="e.g., 19.0760"
+                    value={formData.latitude}
+                    onChange={(e) => handleChange("latitude", e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="longitude">Longitude</Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="any"
+                    placeholder="e.g., 72.8777"
+                    value={formData.longitude}
+                    onChange={(e) => handleChange("longitude", e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -244,6 +272,17 @@ const AddProperty = () => {
                   onChange={(e) => handleChange("description", e.target.value)}
                 />
               </div>
+
+              {formData.latitude && formData.longitude && (
+                <div className="space-y-2">
+                  <Label>Map Preview</Label>
+                  <div className="w-full h-[300px] rounded-lg overflow-hidden border">
+                    <div className="h-full w-full bg-secondary/20 flex items-center justify-center text-muted-foreground">
+                      Map will display at: {parseFloat(formData.latitude).toFixed(4)}, {parseFloat(formData.longitude).toFixed(4)}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-4">
                 <Button type="submit" disabled={isLoading} className="flex-1">

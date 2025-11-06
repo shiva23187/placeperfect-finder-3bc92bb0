@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          phone_number: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          phone_number: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone_number?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       properties: {
         Row: {
           area: number | null
@@ -25,8 +52,10 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          latitude: number | null
           listing_type: string
           location: string
+          longitude: number | null
           price: number
           title: string
           updated_at: string
@@ -42,8 +71,10 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          latitude?: number | null
           listing_type: string
           location: string
+          longitude?: number | null
           price: number
           title: string
           updated_at?: string
@@ -59,8 +90,10 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          latitude?: number | null
           listing_type?: string
           location?: string
+          longitude?: number | null
           price?: number
           title?: string
           updated_at?: string

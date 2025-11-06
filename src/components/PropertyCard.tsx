@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, MapPin, Bed, Bath, Square } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import ShareButton from "./ShareButton";
 
 interface PropertyCardProps {
   id: string;
@@ -41,16 +42,27 @@ const PropertyCard = ({
             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
           />
         </Link>
-        <button
-          onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors"
-        >
-          <Heart
-            className={`h-5 w-5 ${
-              isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground"
-            }`}
-          />
-        </button>
+        <div className="absolute top-4 right-4 flex gap-2">
+          <button
+            onClick={() => setIsFavorite(!isFavorite)}
+            className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors"
+          >
+            <Heart
+              className={`h-5 w-5 ${
+                isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground"
+              }`}
+            />
+          </button>
+          <div className="bg-white/90 rounded-full hover:bg-white transition-colors">
+            <ShareButton
+              propertyId={id}
+              propertyTitle={title}
+              variant="ghost"
+              size="icon"
+              className="hover:bg-transparent"
+            />
+          </div>
+        </div>
         <div className="absolute top-4 left-4 flex gap-2">
           <Badge className="bg-primary">{type}</Badge>
           <Badge variant={listingType === "sale" ? "default" : "secondary"}>

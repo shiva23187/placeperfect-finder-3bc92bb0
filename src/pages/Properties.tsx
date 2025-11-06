@@ -30,11 +30,22 @@ interface Property {
 const Properties = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [listingType, setListingType] = useState<"all" | "sale" | "rent">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchProperties();
+    
+    // Get search params from URL
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get("search");
+    const type = params.get("type");
+    const category = params.get("category");
+    
+    if (search) setSearchQuery(search);
+    if (type) setListingType(type as "sale" | "rent");
+    if (category) setCategoryFilter(category);
   }, []);
 
   const fetchProperties = async () => {
@@ -57,10 +68,32 @@ const Properties = () => {
     if (listingType !== "all" && property.listing_type !== listingType) {
       return false;
     }
-    if (searchQuery && !property.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !property.location.toLowerCase().includes(searchQuery.toLowerCase())) {
+    
+    if (categoryFilter !== "all" && property.category !== categoryFilter) {
       return false;
     }
+    
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = property.title.toLowerCase().includes(query);
+      const matchesLocation = property.location.toLowerCase().includes(query);
+      const matchesCategory = property.category.toLowerCase().includes(query);
+      
+      // Check if query is a price range (e.g., "50000-100000" or "50k-1lakh")
+      const priceMatch = query.match(/(\d+)(?:k|lakh|cr)?[\s-]*(?:to)?[\s-]*(\d+)(?:k|lakh|cr)?/);
+      let matchesPrice = false;
+      
+      if (priceMatch) {
+        const min = parseFloat(priceMatch[1]) * (query.includes('lakh') ? 100000 : query.includes('cr') ? 10000000 : query.includes('k') ? 1000 : 1);
+        const max = parseFloat(priceMatch[2]) * (query.includes('lakh') ? 100000 : query.includes('cr') ? 10000000 : query.includes('k') ? 1000 : 1);
+        matchesPrice = property.price >= min && property.price <= max;
+      }
+      
+      if (!matchesTitle && !matchesLocation && !matchesCategory && !matchesPrice) {
+        return false;
+      }
+    }
+    
     return true;
   });
 
@@ -122,16 +155,19 @@ const Properties = () => {
                 className="h-12"
               />
             </div>
-            <Select>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="h-12">
                 <SelectValue placeholder="Property Type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="house">House</SelectItem>
-                <SelectItem value="apartment">Apartment</SelectItem>
-                <SelectItem value="shop">Shop</SelectItem>
-                <SelectItem value="hotel">Hotel</SelectItem>
+                <SelectItem value="House">House</SelectItem>
+                <SelectItem value="Apartment">Apartment</SelectItem>
+                <SelectItem value="Shop">Shop</SelectItem>
+                <SelectItem value="Hotel">Hotel</SelectItem>
+                <SelectItem value="Playground">Playground</SelectItem>
+                <SelectItem value="Villa">Villa</SelectItem>
+                <SelectItem value="Land">Land</SelectItem>
               </SelectContent>
             </Select>
             <Button className="h-12">

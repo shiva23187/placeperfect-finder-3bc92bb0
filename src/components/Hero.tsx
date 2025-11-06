@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -11,6 +13,20 @@ import {
 } from "@/components/ui/select";
 
 const Hero = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [listingType, setListingType] = useState("");
+  const [propertyType, setPropertyType] = useState("");
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("search", searchQuery);
+    if (listingType) params.set("type", listingType);
+    if (propertyType) params.set("category", propertyType);
+    
+    navigate(`/properties?${params.toString()}`);
+  };
+
   return (
     <div className="relative min-h-[600px] flex items-center justify-center">
       <div
@@ -31,11 +47,14 @@ const Hero = () => {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
               <Input
-                placeholder="Search location..."
+                placeholder="Search location or property..."
                 className="h-12"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
-            <Select>
+            <Select value={listingType} onValueChange={setListingType}>
               <SelectTrigger className="h-12">
                 <SelectValue placeholder="Buy or Rent" />
               </SelectTrigger>
@@ -44,19 +63,21 @@ const Hero = () => {
                 <SelectItem value="rent">Rent</SelectItem>
               </SelectContent>
             </Select>
-            <Select>
+            <Select value={propertyType} onValueChange={setPropertyType}>
               <SelectTrigger className="h-12">
                 <SelectValue placeholder="Property Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="house">House</SelectItem>
-                <SelectItem value="apartment">Apartment</SelectItem>
-                <SelectItem value="shop">Shop</SelectItem>
-                <SelectItem value="hotel">Hotel</SelectItem>
-                <SelectItem value="playground">Playground</SelectItem>
+                <SelectItem value="House">House</SelectItem>
+                <SelectItem value="Apartment">Apartment</SelectItem>
+                <SelectItem value="Shop">Shop</SelectItem>
+                <SelectItem value="Hotel">Hotel</SelectItem>
+                <SelectItem value="Playground">Playground</SelectItem>
+                <SelectItem value="Villa">Villa</SelectItem>
+                <SelectItem value="Land">Land</SelectItem>
               </SelectContent>
             </Select>
-            <Button className="h-12 bg-primary hover:bg-primary/90">
+            <Button className="h-12 bg-primary hover:bg-primary/90" onClick={handleSearch}>
               <Search className="mr-2 h-5 w-5" />
               Search
             </Button>
