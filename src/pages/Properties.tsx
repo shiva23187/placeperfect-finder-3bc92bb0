@@ -193,7 +193,7 @@ const Properties = () => {
                 id={property.id}
                 image={property.image_url || ""}
                 title={property.title}
-                price={formatPrice(property.price, property.listing_type)}
+                price={property.price}
                 location={property.location}
                 beds={property.bedrooms || undefined}
                 baths={property.bathrooms || undefined}

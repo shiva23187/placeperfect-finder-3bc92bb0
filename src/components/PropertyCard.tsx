@@ -1,21 +1,24 @@
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, Bed, Bath, Square } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { MapPin, Bed, Bath, Maximize, Heart, Star } from "lucide-react";
 import ShareButton from "./ShareButton";
+import { toast } from "@/hooks/use-toast";
 
 interface PropertyCardProps {
   id: string;
   image: string;
   title: string;
-  price: string;
+  price: number;
   location: string;
   beds?: number;
   baths?: number;
   sqft?: number;
   type: string;
-  listingType: "sale" | "rent";
+  listingType: string;
 }
 
 const PropertyCard = ({
@@ -30,7 +33,92 @@ const PropertyCard = ({
   type,
   listingType,
 }: PropertyCardProps) => {
+  const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+
+  useEffect(() => {
+    checkFavorite();
+    fetchRating();
+  }, [id]);
+
+  const checkFavorite = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("favorites")
+      .select("id")
+      .eq("property_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    setIsFavorite(!!data);
+  };
+
+  const fetchRating = async () => {
+    const { data } = await supabase
+      .from("ratings")
+      .select("rating")
+      .eq("property_id", id);
+
+    if (data && data.length > 0) {
+      const avg = data.reduce((sum, r) => sum + r.rating, 0) / data.length;
+      setAverageRating(avg);
+    }
+  };
+
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to add favorites",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        await supabase
+          .from("favorites")
+          .delete()
+          .eq("property_id", id)
+          .eq("user_id", user.id);
+        
+        setIsFavorite(false);
+        toast({ title: "Removed from favorites" });
+      } else {
+        await supabase
+          .from("favorites")
+          .insert({ property_id: id, user_id: user.id });
+        
+        setIsFavorite(true);
+        toast({ title: "Added to favorites" });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatPrice = (price: number) => {
+    if (price >= 10000000) {
+      return `₹${(price / 10000000).toFixed(2)} Cr`;
+    } else if (price >= 100000) {
+      return `₹${(price / 100000).toFixed(2)} Lakh`;
+    } else {
+      return `₹${price.toLocaleString()}`;
+    }
+  };
 
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg">
@@ -42,32 +130,35 @@ const PropertyCard = ({
             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
           />
         </Link>
-        <div className="absolute top-4 right-4 flex gap-2">
-          <button
-            onClick={() => setIsFavorite(!isFavorite)}
-            className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors"
-          >
-            <Heart
-              className={`h-5 w-5 ${
-                isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground"
-              }`}
-            />
-          </button>
-          <div className="bg-white/90 rounded-full hover:bg-white transition-colors">
-            <ShareButton
-              propertyId={id}
-              propertyTitle={title}
-              variant="ghost"
-              size="icon"
-              className="hover:bg-transparent"
-            />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 bg-white/90 hover:bg-white"
+          onClick={toggleFavorite}
+        >
+          <Heart
+            className={`h-5 w-5 ${
+              isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"
+            }`}
+          />
+        </Button>
+        {averageRating > 0 && (
+          <div className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded-md flex items-center gap-1">
+            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            <span className="text-sm font-semibold">{averageRating.toFixed(1)}</span>
           </div>
-        </div>
-        <div className="absolute top-4 left-4 flex gap-2">
+        )}
+        <div className="absolute bottom-2 left-2 flex gap-2">
           <Badge className="bg-primary">{type}</Badge>
-          <Badge variant={listingType === "sale" ? "default" : "secondary"}>
+          <Badge variant="secondary">
             For {listingType === "sale" ? "Sale" : "Rent"}
           </Badge>
+        </div>
+        <div className="absolute bottom-2 right-2">
+          <ShareButton
+            propertyId={id}
+            propertyTitle={title}
+          />
         </div>
       </div>
       <CardContent className="p-5">
@@ -96,13 +187,13 @@ const PropertyCard = ({
             )}
             {sqft && (
               <div className="flex items-center">
-                <Square className="h-4 w-4 mr-1" />
+                <Maximize className="h-4 w-4 mr-1" />
                 <span>{sqft} sqft</span>
               </div>
             )}
           </div>
         )}
-        <div className="text-2xl font-bold text-primary">{price}</div>
+        <div className="text-2xl font-bold text-primary">{formatPrice(price)}</div>
       </CardContent>
     </Card>
   );

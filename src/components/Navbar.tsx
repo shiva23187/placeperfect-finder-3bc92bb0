@@ -31,6 +31,7 @@ const Navbar = () => {
   const navLinks = [
     { label: "Buy", href: "/properties" },
     { label: "Sell", href: "/add-property" },
+    ...(user ? [{ label: "Favorites", href: "/favorites" }] : []),
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
