@@ -15,6 +15,7 @@ const AddProperty = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([""]);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -26,7 +27,6 @@ const AddProperty = () => {
     bedrooms: "",
     bathrooms: "",
     area: "",
-    imageUrl: "",
     latitude: "",
     longitude: "",
   });
@@ -69,31 +69,56 @@ const AddProperty = () => {
 
     setIsLoading(true);
 
-    const { error } = await supabase.from("properties").insert({
-      user_id: user.id,
-      title: formData.title,
-      category: formData.category,
-      listing_type: formData.listingType,
-      price: parseFloat(formData.price),
-      location: formData.location,
-      description: formData.description,
-      contact_number: formData.contactNumber,
-      bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
-      bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
-      area: formData.area ? parseFloat(formData.area) : null,
-      image_url: formData.imageUrl || null,
-      latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-      longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-    });
+    // Filter out empty image URLs
+    const validImageUrls = imageUrls.filter(url => url.trim() !== "");
+
+    const { data: property, error: propertyError } = await supabase
+      .from("properties")
+      .insert({
+        user_id: user.id,
+        title: formData.title,
+        category: formData.category,
+        listing_type: formData.listingType,
+        price: parseFloat(formData.price),
+        location: formData.location,
+        description: formData.description,
+        contact_number: formData.contactNumber,
+        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
+        bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
+        area: formData.area ? parseFloat(formData.area) : null,
+        image_url: validImageUrls[0] || null,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+      })
+      .select()
+      .single();
+
+    if (propertyError) {
+      setIsLoading(false);
+      toast.error("Failed to add property: " + propertyError.message);
+      return;
+    }
+
+    // Insert additional images if any
+    if (validImageUrls.length > 1 && property) {
+      const imageRecords = validImageUrls.slice(1).map((url, index) => ({
+        property_id: property.id,
+        image_url: url,
+        display_order: index + 1,
+      }));
+
+      const { error: imagesError } = await supabase
+        .from("property_images")
+        .insert(imageRecords);
+
+      if (imagesError) {
+        console.error("Failed to add additional images:", imagesError);
+      }
+    }
 
     setIsLoading(false);
-
-    if (error) {
-      toast.error("Failed to add property: " + error.message);
-    } else {
-      toast.success("Property added successfully!");
-      navigate("/properties");
-    }
+    toast.success("Property added successfully!");
+    navigate("/properties");
   };
 
   const handleChange = (field: string, value: string) => {
@@ -226,15 +251,42 @@ const AddProperty = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="imageUrl">Image URL</Label>
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    placeholder="https://example.com/image.jpg"
-                    value={formData.imageUrl}
-                    onChange={(e) => handleChange("imageUrl", e.target.value)}
-                  />
+                <div className="md:col-span-2 space-y-2">
+                  <Label>Property Images (URLs)</Label>
+                  {imageUrls.map((url, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        type="url"
+                        placeholder={`Image URL ${index + 1}`}
+                        value={url}
+                        onChange={(e) => {
+                          const newUrls = [...imageUrls];
+                          newUrls[index] = e.target.value;
+                          setImageUrls(newUrls);
+                        }}
+                      />
+                      {imageUrls.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const newUrls = imageUrls.filter((_, i) => i !== index);
+                            setImageUrls(newUrls);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setImageUrls([...imageUrls, ""])}
+                    className="w-full"
+                  >
+                    Add Another Image
+                  </Button>
                 </div>
 
                 <div className="space-y-2">

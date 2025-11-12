@@ -1,13 +1,51 @@
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Contact = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleWhatsApp = () => {
     window.open("https://wa.me/1234567890", "_blank");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name || !email || !subject || !message) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase.functions.invoke("send-contact-email", {
+        body: { name, email, subject, message },
+      });
+
+      if (error) throw error;
+
+      toast.success("Message sent successfully! We'll get back to you soon.");
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+    } catch (error: any) {
+      toast.error("Failed to send message: " + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -56,19 +94,38 @@ const Contact = () => {
           <Card>
             <CardContent className="p-8">
               <h2 className="text-2xl font-bold mb-6">Send us a message</h2>
-              <form className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Input placeholder="Your Name" />
-                  <Input type="email" placeholder="Your Email" />
+                  <Input 
+                    placeholder="Your Name" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                  <Input 
+                    type="email" 
+                    placeholder="Your Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
-                <Input placeholder="Subject" />
+                <Input 
+                  placeholder="Subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  required
+                />
                 <Textarea
                   placeholder="Your Message"
                   className="min-h-[150px]"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  required
                 />
                 <div className="flex gap-4">
-                  <Button type="submit" className="flex-1">
-                    Send Message
+                  <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                    {isSubmitting ? "Sending..." : "Send Message"}
                   </Button>
                   <Button
                     type="button"

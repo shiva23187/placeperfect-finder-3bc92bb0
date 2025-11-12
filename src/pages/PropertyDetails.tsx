@@ -11,7 +11,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { MapPin, Bed, Bath, Maximize, Heart, Mail, Star, Edit, Trash2, MessageSquare, Phone } from "lucide-react";
 import ShareButton from "@/components/ShareButton";
 import PropertyMap from "@/components/PropertyMap";
+import { VisitScheduler } from "@/components/VisitScheduler";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface PropertyData {
   id: string;
@@ -42,6 +44,8 @@ const PropertyDetails = () => {
   const [userRating, setUserRating] = useState(0);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [propertyImages, setPropertyImages] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const getUser = async () => {
@@ -253,6 +257,17 @@ const PropertyDetails = () => {
 
       if (error) throw error;
       setProperty(data);
+
+      // Fetch additional images
+      const { data: imagesData } = await supabase
+        .from("property_images")
+        .select("image_url")
+        .eq("property_id", id!)
+        .order("display_order");
+
+      const allImages = [data.image_url, ...(imagesData?.map(img => img.image_url) || [])].filter(Boolean);
+      setPropertyImages(allImages);
+
     } catch (error: any) {
       toast({
         title: "Error",
@@ -316,11 +331,31 @@ const PropertyDetails = () => {
       <Navbar />
 
       <div className="relative">
-        <img
-          src={property.image_url || "/placeholder.svg"}
-          alt={property.title}
-          className="w-full h-[400px] object-cover"
-        />
+        {propertyImages.length > 0 && (
+          <div className="relative">
+            <img
+              src={propertyImages[currentImageIndex] || "/placeholder.svg"}
+              alt={`${property.title} - Image ${currentImageIndex + 1}`}
+              className="w-full h-[400px] object-cover"
+            />
+            {propertyImages.length > 1 && (
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black/50 px-4 py-2 rounded-full">
+                {propertyImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={cn(
+                      "w-3 h-3 rounded-full transition-all",
+                      index === currentImageIndex
+                        ? "bg-white w-8"
+                        : "bg-white/50 hover:bg-white/75"
+                    )}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         <div className="absolute top-4 left-4">
           <Badge className="bg-primary text-lg py-2 px-4">
             {property.category}
@@ -499,18 +534,22 @@ const PropertyDetails = () => {
                 )}
               </div>
             </Card>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              {property.latitude && property.longitude && (
+                <Card className="p-6">
+                  <h2 className="text-2xl font-semibold mb-4">Location</h2>
+                  <PropertyMap
+                    latitude={property.latitude}
+                    longitude={property.longitude}
+                    title={property.title}
+                    location={property.location}
+                  />
+                </Card>
+              )}
 
-            {property.latitude && property.longitude && (
-              <Card className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">Location</h2>
-                <PropertyMap
-                  latitude={property.latitude}
-                  longitude={property.longitude}
-                  title={property.title}
-                  location={property.location}
-                />
-              </Card>
-            )}
+              <VisitScheduler propertyId={id!} userId={user?.id || null} />
+            </div>
           </div>
 
           <div className="lg:col-span-1">
