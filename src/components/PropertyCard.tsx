@@ -123,11 +123,11 @@ const PropertyCard = ({
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg">
       <div className="relative overflow-hidden">
-        <Link to={`/property/${id}`}>
+        <Link to={`/property/${id}`} className="block aspect-[4/3] overflow-hidden">
           <img
             src={image}
             alt={title}
-            className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
         </Link>
         <Button

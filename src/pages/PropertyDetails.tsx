@@ -332,11 +332,11 @@ const PropertyDetails = () => {
 
       <div className="relative">
         {propertyImages.length > 0 && (
-          <div className="relative">
+          <div className="relative aspect-[16/9] overflow-hidden">
             <img
               src={propertyImages[currentImageIndex] || "/placeholder.svg"}
               alt={`${property.title} - Image ${currentImageIndex + 1}`}
-              className="w-full h-[400px] object-cover"
+              className="w-full h-full object-cover"
             />
             {propertyImages.length > 1 && (
               <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black/50 px-4 py-2 rounded-full">
