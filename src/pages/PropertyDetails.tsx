@@ -12,7 +12,7 @@ import { MapPin, Bed, Bath, Maximize, Heart, Mail, Star, Edit, Trash2, MessageSq
 import ShareButton from "@/components/ShareButton";
 import PropertyMap from "@/components/PropertyMap";
 import { VisitScheduler } from "@/components/VisitScheduler";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface PropertyData {
@@ -77,11 +77,7 @@ const PropertyDetails = () => {
   const toggleFavorite = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please login to add favorites",
-        variant: "destructive",
-      });
+      toast.error("Please login to add favorites");
       return;
     }
 
@@ -94,21 +90,17 @@ const PropertyDetails = () => {
           .eq("user_id", user.id);
         
         setIsFavorite(false);
-        toast({ title: "Removed from favorites" });
+        toast.success("Removed from favorites");
       } else {
         await supabase
           .from("favorites")
           .insert({ property_id: id, user_id: user.id });
         
         setIsFavorite(true);
-        toast({ title: "Added to favorites" });
+        toast.success("Added to favorites");
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "An error occurred");
     }
   };
 
@@ -135,11 +127,7 @@ const PropertyDetails = () => {
   const handleRating = async (rating: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please login to rate properties",
-        variant: "destructive",
-      });
+      toast.error("Please login to rate properties");
       return;
     }
 
@@ -152,13 +140,9 @@ const PropertyDetails = () => {
 
       setUserRating(rating);
       fetchRatings();
-      toast({ title: "Rating submitted successfully" });
+      toast.success("Rating submitted successfully");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "An error occurred");
     }
   };
 
@@ -178,11 +162,7 @@ const PropertyDetails = () => {
   const handleAddComment = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please login to comment",
-        variant: "destructive",
-      });
+      toast.error("Please login to comment");
       return;
     }
 
@@ -197,13 +177,9 @@ const PropertyDetails = () => {
 
       setNewComment("");
       fetchComments();
-      toast({ title: "Comment added successfully" });
+      toast.success("Comment added successfully");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "An error occurred");
     }
   };
 
@@ -217,13 +193,9 @@ const PropertyDetails = () => {
       if (error) throw error;
 
       fetchComments();
-      toast({ title: "Comment deleted" });
+      toast.success("Comment deleted");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "An error occurred");
     }
   };
 
@@ -236,14 +208,10 @@ const PropertyDetails = () => {
 
       if (error) throw error;
 
-      toast({ title: "Property deleted successfully" });
+      toast.success("Property deleted successfully");
       navigate("/properties");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete property");
     }
   };
 
@@ -269,11 +237,7 @@ const PropertyDetails = () => {
       setPropertyImages(allImages);
 
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch property details",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch property details");
     } finally {
       setIsLoading(false);
     }
